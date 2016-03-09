@@ -20,7 +20,7 @@
     "args": "0.0.3",
     "async": "^1.5.2",
     "cheerio": "^0.20.0",
-    "jbj-array": "^1.0.0",
+    "group-array": "^0.3.0",
     "kuler": "0.0.0",
     "node-dir": "^0.1.11",
     "path": "^0.12.7"

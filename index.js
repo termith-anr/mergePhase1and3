@@ -7,6 +7,7 @@ var cheerio = require('cheerio'),
 	argv = process.argv,
 	fs = require('fs'),
   dir = require('node-dir'),
+  groupArray = require('group-array'),
   JBJ = require('jbj'),
 	path = require('path');
 
@@ -81,16 +82,15 @@ var stylesheet = {
   "arrays2objects": ["nom", "titre", "methode" , "evaluation" , "motcle" , "score", "pref" , "corresp" , "note"]
 };
 
+// Lecture du fichier CSV
 JBJ.render(stylesheet, function(err, out) {
   var csvFile = out;
-  // console.log(out);
-  // Pour chaque fichier XML du dossier
+  // Pour chaque fichier XML (non caché) du dossier
   dir.readFiles(parsed.input,
     {
       match: /.xml$/,
       exclude: /^\./
     },
-    // For each document
     function(err, content, filename ,next) {
       if (err) throw err;
 
@@ -99,12 +99,11 @@ JBJ.render(stylesheet, function(err, out) {
         set : csvFile,
         select : ':has(:root > .nom:val("'+ path.basename(filename) +'"))'
       };
-
+      // > return array of Objects
       JBJ.render(stylesheet2, function(err, out) {
-        console.log("For file  :" , filename , " out : " , out);
+        var grouped = groupArray(out, "methode" , "evaluation") 
+        console.dir(grouped,{ depth: null });
       });
-
-      // console.log("fn : " , path.basename(filename));
 
       //Go to next file
       next();
