@@ -107,6 +107,16 @@ JBJ.render(stylesheet, function(err, out) {
 
         // Chargement du fichier XML par cheerio
         var $ = cheerio.load(content, {normalizeWhitespace: true,xmlMode: true});
+        var sil = []
+        $('keywords[scheme="inist-francis"][xml\\:lang="fr"] term').each(function(index, element){
+          var objSil = {
+            "xmlid" : $(this).attr("xml:id"),
+             "word" : $(this).text()
+          };
+          sil.push(objSil);
+        });
+
+        console.log("osil : " , sil);
 
         Object.keys(grouped).forEach(function(methode,index){
           var xmlJsonC = JSON.parse(JSON.stringify(xmlJson));
@@ -116,17 +126,19 @@ JBJ.render(stylesheet, function(err, out) {
           xmlJsonC["set"]["ns:stdf"]["ns:soHeader"]["encodingDesc"]["appInfo"]["application"]["ident"] = methode;
           xmlJsonC["set"]["ns:stdf"]["ns:soHeader"]["encodingDesc"]["appInfo"]["application"]["label"]["$t"] = methode;
 
+          // pour chaque méthode 
           Object.keys(grouped[methode]).forEach(function(type,index){
             var nn = (type === "Silence") ? "ikwfr" : "mi";
 
-            // Pointe la premiere méthode
+            // Pour chaque mot noté
             grouped[methode][type].forEach(function(val,i){
 
               var annGRPNb, xmlid;
+              var comment = val.note ? val.note : null;
 
               // Si c'est pertinences , on doit dresser la liste des mot d'abord Puis leurs score
               if(type === "Pertinence"){
-                xmlid = "mi" + nbMethod + "kw" + i;
+                xmlid = "mi" + nbMethod + "kw" + (i + 1);
                 annGRPNb = 0;
                 var obj = {
                   "xml:ns"  : "http://www.tbx.org", 
@@ -144,7 +156,8 @@ JBJ.render(stylesheet, function(err, out) {
                 xmlJsonC["set"]["ns:stdf"]["ns:annotations"]["termEntry"].push(obj);
               }
               else{
-                xmlid = "ikwfr" + i;
+
+                xmlid = "ikwfr" + (i + 1);
                 annGRPNb = 1;
               }
               var notedSilObj = {
@@ -152,7 +165,8 @@ JBJ.render(stylesheet, function(err, out) {
                 "num" : {
                   "type" : "pertinence",
                   "$t" : val.score
-                }
+                },
+                "note" : comment
               };
               xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][annGRPNb]["span"].push(notedSilObj);
             });
