@@ -1,0 +1,64 @@
+{
+  "set" : {
+    "ns:stdf": {
+      "xml:id" : "xNb",
+      "ns:soHeader" : {
+        "encodingDesc" : {
+          "appInfo" : {
+            "application" : {
+              "ident" : "xMethode",
+              "version" : "1.0",
+              "label" : {
+                "$t" : "xMethode"
+              }
+            }
+          }
+        }
+      },
+      "ns:annotations" : {
+        "termEntry" : []
+      },
+      "ns:stdf" : {
+        "ns:soHeader" : {
+          "encodingDesc" : {
+            "xmlns" : "http://www.tei-c.org/ns/1.0",
+            "appInfo" : {
+              "application" : {
+                "ident" : "idefix",
+                "version" : "1.0",
+                "label" : {
+                  "$t" : "idefix"
+                }
+              }
+            }
+          },
+          "titleStmt" : {
+            "xmlns" : "http://www.tei-c.org/ns/1.0",
+            "title" : {
+              "$t" : "évaluation indexation"
+            },
+            "author" : {
+              "role" : "IndexingEvaluator",
+              "$t" : "INIST"
+            }
+          }
+        },
+        "ns:annotations" : {
+          "ns:annotationGrp" : [
+            {
+              "type" : "pertinence",
+              "span" : []
+            }, 
+            { 
+              "type" : "silence",
+              "span" : []
+            }
+          ]
+        }
+      }
+    }
+  },
+  "xml" : {
+    "indent": false
+  }
+}

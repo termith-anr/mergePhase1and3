@@ -82,6 +82,8 @@ var stylesheet = {
   "arrays2objects": ["nom", "titre", "methode" , "evaluation" , "motcle" , "score", "pref" , "corresp" , "note"]
 };
 
+var xmlJson = JSON.parse(fs.readFileSync("input.json", "utf8"));
+
 // Lecture du fichier CSV
 JBJ.render(stylesheet, function(err, out) {
   var csvFile = out;
@@ -106,63 +108,62 @@ JBJ.render(stylesheet, function(err, out) {
         // Chargement du fichier XML par cheerio
         var $ = cheerio.load(content, {normalizeWhitespace: true,xmlMode: true});
 
-        // Pointe la premiere méthode
-        var stylesheet3 = {
-          "set" : {
-            "ns:annotations" : {
-              "termEntry" : []
-            }
-          },
-          "xml" : {
-            "indent": false
-          }
-          
-        };
+        Object.keys(grouped).forEach(function(methode,index){
+          var xmlJsonC = JSON.parse(JSON.stringify(xmlJson));
+          var nbMethod = (methode == "lina-1:notice:tfidf:sequences_nom_adj") ? 1 : 2;
 
-        // console.log("grouped : " ,grouped);
-        // Pointe la premiere méthode
-        grouped["lina-1:notice:tfidf:sequences_nom_adj"]["Pertinence"].forEach(function(val,i){
-          var obj = {
-              "xml:ns"  : "http://www.tbx.org", 
-              "xml:id" : "mi1kw" + (i+1), 
-              "langSet" : {
-                "xml:lang" : "fr",
-                "tig" : {
-                  "term" : {
-                    "xml:ns" : "http://www.tei-c.org/ns/1.0",
-                    "$t" : val.motcle
+          xmlJsonC["set"]["ns:stdf"]["xml:id"] = "mi" + nbMethod;
+          xmlJsonC["set"]["ns:stdf"]["ns:soHeader"]["encodingDesc"]["appInfo"]["application"]["ident"] = methode;
+          xmlJsonC["set"]["ns:stdf"]["ns:soHeader"]["encodingDesc"]["appInfo"]["application"]["label"]["$t"] = methode;
+
+          Object.keys(grouped[methode]).forEach(function(type,index){
+            var nn = (type === "Silence") ? "ikwfr" : "mi";
+
+            // Pointe la premiere méthode
+            grouped[methode][type].forEach(function(val,i){
+
+              var annGRPNb, xmlid;
+
+              // Si c'est pertinences , on doit dresser la liste des mot d'abord Puis leurs score
+              if(type === "Pertinence"){
+                xmlid = "mi" + nbMethod + "kw" + i;
+                annGRPNb = 0;
+                var obj = {
+                  "xml:ns"  : "http://www.tbx.org", 
+                  "xml:id" : xmlid, 
+                  "langSet" : {
+                    "xml:lang" : "fr",
+                    "tig" : {
+                      "term" : {
+                        "xml:ns" : "http://www.tei-c.org/ns/1.0",
+                        "$t" : val.motcle
+                      }
+                    }
                   }
-                }
+                };
+                xmlJsonC["set"]["ns:stdf"]["ns:annotations"]["termEntry"].push(obj);
               }
-            };
-          stylesheet3["set"]["ns:annotations"]["termEntry"].push(obj);
+              else{
+                xmlid = "ikwfr" + i;
+                annGRPNb = 1;
+              }
+              var notedSilObj = {
+                "from" : xmlid,
+                "num" : {
+                  "type" : "pertinence",
+                  "$t" : val.score
+                }
+              };
+              xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][annGRPNb]["span"].push(notedSilObj);
+            });
+          });
+
+          JBJ.render(xmlJsonC , function(err, out) {
+            console.log(filename);
+            console.log(out);
+          });
+          console.log("=====")
         });
-
-        // var stylesheet3 = {
-        //   "ns:annotations" : {
-        //     "termEntry" : [
-        //       {"xml:ns"  : "http://www.tbx.org", 
-        //         "xml:id" : "123", 
-        //         "langSet" : {
-        //           "xml:lang" : "fr",
-        //           "tig" : {
-        //             "term" : {
-        //               "xml:ns" : "http://www.tei-c.org/ns/1.0",
-        //               "$t" : "professionnel"
-        //             }
-        //           }
-        //         }
-        //       }
-        //     ]
-        //   }
-        // };
-
-        JBJ.render(stylesheet3 , function(err, out) {
-          console.log(out.toString());
-        });
-        console.log("=====")
-
-        
       });
 
       //Go to next file
@@ -173,4 +174,3 @@ JBJ.render(stylesheet, function(err, out) {
     }
   );
 });
-
