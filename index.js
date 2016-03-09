@@ -101,8 +101,68 @@ JBJ.render(stylesheet, function(err, out) {
       };
       // > return array of Objects
       JBJ.render(stylesheet2, function(err, out) {
-        var grouped = groupArray(out, "methode" , "evaluation") 
-        console.dir(grouped,{ depth: null });
+        var grouped = groupArray(out, "methode" , "evaluation");
+
+        // Chargement du fichier XML par cheerio
+        var $ = cheerio.load(content, {normalizeWhitespace: true,xmlMode: true});
+
+        // Pointe la premiere méthode
+        var stylesheet3 = {
+          "set" : {
+            "ns:annotations" : {
+              "termEntry" : []
+            }
+          },
+          "xml" : {
+            "indent": false
+          }
+          
+        };
+
+        // console.log("grouped : " ,grouped);
+        // Pointe la premiere méthode
+        grouped["lina-1:notice:tfidf:sequences_nom_adj"]["Pertinence"].forEach(function(val,i){
+          var obj = {
+              "xml:ns"  : "http://www.tbx.org", 
+              "xml:id" : "mi1kw" + (i+1), 
+              "langSet" : {
+                "xml:lang" : "fr",
+                "tig" : {
+                  "term" : {
+                    "xml:ns" : "http://www.tei-c.org/ns/1.0",
+                    "$t" : val.motcle
+                  }
+                }
+              }
+            };
+          stylesheet3["set"]["ns:annotations"]["termEntry"].push(obj);
+        });
+
+        // var stylesheet3 = {
+        //   "ns:annotations" : {
+        //     "termEntry" : [
+        //       {"xml:ns"  : "http://www.tbx.org", 
+        //         "xml:id" : "123", 
+        //         "langSet" : {
+        //           "xml:lang" : "fr",
+        //           "tig" : {
+        //             "term" : {
+        //               "xml:ns" : "http://www.tei-c.org/ns/1.0",
+        //               "$t" : "professionnel"
+        //             }
+        //           }
+        //         }
+        //       }
+        //     ]
+        //   }
+        // };
+
+        JBJ.render(stylesheet3 , function(err, out) {
+          console.log(out.toString());
+        });
+        console.log("=====")
+
+        
       });
 
       //Go to next file
@@ -110,7 +170,6 @@ JBJ.render(stylesheet, function(err, out) {
     },
     function(err, files){
         if (err) throw err;
-        // console.log('finished reading files:', files);
     }
   );
 });
