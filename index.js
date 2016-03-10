@@ -101,6 +101,8 @@ var stylesheet = {
   "arrays2objects": ["nom", "titre", "methode" , "evaluation" , "motcle" , "score", "pref" , "corresp" , "note"]
 };
 
+var nbFile = 0;
+
 var xmlJson = JSON.parse(fs.readFileSync("input.json", "utf8"));
 
 // Lecture du fichier CSV
@@ -140,11 +142,8 @@ JBJ.render(stylesheet, function(err, out) {
           xmlJsonC["set"]["ns:stdf"]["ns:soHeader"]["encodingDesc"]["appInfo"]["application"]["ident"] = methode;
           xmlJsonC["set"]["ns:stdf"]["ns:soHeader"]["encodingDesc"]["appInfo"]["application"]["label"]["$t"] = methode;
 
-          // pour chaque méthode 
-          Object.keys(grouped[methode]).forEach(function(type,index){
+          var execObjs = function(type){
             var nn = (type === "Silence") ? "ikwfr" : "mi";
-
-            // Pour chaque mot noté
             grouped[methode][type].forEach(function(val,i){
 
               var annGRPNb, xmlid;
@@ -192,27 +191,95 @@ JBJ.render(stylesheet, function(err, out) {
               }
               //Gestion Corresp
               if(val.corresp && (val.corresp != "-")){
-                console.log("corresp : " , val.corresp);
-                for (var i = 0; i < grouped[methode].Pertinence.length; i++) {
-                  if(grouped[methode].Pertinence[i].motcle == val.corresp){
-                    notedObj.link.push({"type" : "TermithForm" , "target" : "mi" + nbMethod + "kw" + (i+1) });
+                // Pour chaque mots pertinence dans cette methode
+                for (var j = 0; j < grouped[methode].Pertinence.length; j++) {
+                  if(grouped[methode].Pertinence[j].motcle == val.corresp){
+                    notedObj.link.push({"type" : "TermithForm" , "target" : "mi" + nbMethod + "kw" + (j+1) });
                     // Ajout lien retour pertinences
-                    xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][0]["span"][i].link.push({"type" : "INISTForm" , "target" : xmlid });
+                    xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][0]["span"][j].link.push({"type" : "INISTForm" , "target" : xmlid });
                   }
                 };  
               }
               xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][annGRPNb]["span"].push(notedObj);
             });
-          });
+          };
+          execObjs("Pertinence");
+          execObjs("Silence");
+          // // pour chaque Type d'eval 
+          // Object.keys(grouped[methode]).forEach(function(type,index){
+          //   var nn = (type === "Silence") ? "ikwfr" : "mi";
+
+          //   // Pour chaque mot noté
+          //   grouped[methode][type].forEach(function(val,i){
+
+          //     var annGRPNb, xmlid;
+          //     var comment = val.note ? val.note : null;
+
+          //     // Si c'est pertinences , on doit dresser la liste des mot d'abord Puis leurs score
+          //     if(type === "Pertinence"){
+          //       xmlid = "mi" + nbMethod + "kw" + (i + 1);
+          //       annGRPNb = 0;
+          //       var obj = {
+          //         "xml:ns"  : "http://www.tbx.org", 
+          //         "xml:id" : xmlid, 
+          //         "langSet" : {
+          //           "xml:lang" : "fr",
+          //           "tig" : {
+          //             "term" : {
+          //               "xml:ns" : "http://www.tei-c.org/ns/1.0",
+          //               "$t" : val.motcle
+          //             }
+          //           }
+          //         }
+          //       };
+          //       xmlJsonC["set"]["ns:stdf"]["ns:annotations"]["termEntry"].push(obj);
+          //     }
+          //     else{
+          //       xmlid = sil[val.motcle] ? sil[val.motcle] : "#NotFound" ;
+          //       annGRPNb = 1;
+          //     }
+          //     var notedObj = {
+          //       "from" : xmlid,
+          //       "num" : {
+          //         "type" : "pertinence",
+          //         "$t" : val.score
+          //       },
+          //       "note" : comment,
+          //       "link" : [] 
+          //     };
+          //     // Gestion preferredForm
+          //     if(val.pref && (val.pref != "-")){
+          //       for (var i = 0; i < grouped[methode][type].length; i++) {
+          //         if(grouped[methode][type][i].motcle == val.pref){
+          //           notedObj.link.push({"type" : "preferredForm" , "target" : "mi" + nbMethod + "kw" + (i+1) });
+          //         }
+          //       };  
+          //     }
+          //     //Gestion Corresp
+          //     if(val.corresp && (val.corresp != "-")){
+          //       // Pour chaque mots pertinence dans cette methode
+          //       for (var j = 0; j < grouped[methode].Pertinence.length; j++) {
+          //         if(grouped[methode].Pertinence[j].motcle == val.corresp){
+          //           notedObj.link.push({"type" : "TermithForm" , "target" : "mi" + nbMethod + "kw" + (j+1) });
+          //           // Ajout lien retour pertinences
+          //           xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][0]["span"][j].link.push({"type" : "INISTForm" , "target" : xmlid });
+          //         }
+          //       };  
+          //     }
+          //     console.dir(xmlJsonC ,{depth : 9});
+          //     xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][annGRPNb]["span"].push(notedObj);
+          //   });
+          // });
           
           var out = JBJ.renderSync(xmlJsonC);
           $("TEI").append(out);
         });
         fs.writeFileSync(path.resolve(parsed.output + "/" + path.basename(filename)) , pd.xml($.xml()));
+        nbFile++;
+        process.stdout.write(kuler( "\r" + nbFile + " fichier(s) traité(s)" , "green"));
+        //Go to next file
+        next();
       });
-
-      //Go to next file
-      next();
     },
     function(err, files){
         if (err) throw err;
