@@ -96,7 +96,7 @@ if (!fs.existsSync(parsed.output)) {
 /* --------------------*/
 
 var stylesheet = {
-  "$?" : "file://" + parsed.csv ,
+  "$?" : "file://" + path.resolve(parsed.csv) ,
   "parseCSVFile": ";",
   "arrays2objects": ["nom", "titre", "methode" , "evaluation" , "motcle" , "score", "pref" , "corresp" , "note"]
 };
@@ -127,7 +127,7 @@ JBJ.render(stylesheet, function(err, out) {
         var grouped = groupArray(out, "methode" , "evaluation");
 
         // Chargement du fichier XML par cheerio
-        var $ = cheerio.load(content, {normalizeWhitespace: true,xmlMode: true});
+        var $ = cheerio.load(content, {normalizeWhitespace: true,xmlMode: true, decodeEntities: false});
         var sil = {};
         $('keywords[scheme="inist-francis"][xml\\:lang="fr"] term').each(function(index, element){
           sil[$(this).text()] = $(this).attr("xml:id");
@@ -178,7 +178,9 @@ JBJ.render(stylesheet, function(err, out) {
                   "type" : "pertinence",
                   "$t" : val.score
                 },
-                "note" : comment,
+                "note" : {
+                  "$t" : comment
+                },  
                 "link" : [] 
               };
               // Gestion preferredForm
