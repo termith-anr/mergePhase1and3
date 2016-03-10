@@ -107,16 +107,10 @@ JBJ.render(stylesheet, function(err, out) {
 
         // Chargement du fichier XML par cheerio
         var $ = cheerio.load(content, {normalizeWhitespace: true,xmlMode: true});
-        var sil = []
+        var sil = {};
         $('keywords[scheme="inist-francis"][xml\\:lang="fr"] term').each(function(index, element){
-          var objSil = {
-            "xmlid" : $(this).attr("xml:id"),
-             "word" : $(this).text()
-          };
-          sil.push(objSil);
+          sil[$(this).text()] = $(this).attr("xml:id");
         });
-
-        console.log("osil : " , sil);
 
         Object.keys(grouped).forEach(function(methode,index){
           var xmlJsonC = JSON.parse(JSON.stringify(xmlJson));
@@ -156,19 +150,27 @@ JBJ.render(stylesheet, function(err, out) {
                 xmlJsonC["set"]["ns:stdf"]["ns:annotations"]["termEntry"].push(obj);
               }
               else{
-
-                xmlid = "ikwfr" + (i + 1);
+                xmlid = sil[val.motcle] ? sil[val.motcle] : "#NotFound" ;
                 annGRPNb = 1;
               }
-              var notedSilObj = {
+              var notedObj = {
                 "from" : xmlid,
                 "num" : {
                   "type" : "pertinence",
                   "$t" : val.score
                 },
-                "note" : comment
+                "note" : comment,
+                "link" : [] 
               };
-              xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][annGRPNb]["span"].push(notedSilObj);
+              if(val.pref && (val.pref != "-")){
+                console.log("preferd : " , val.pref);
+                for (var i = 0; i < grouped[methode][type].length; i++) {
+                  if(grouped[methode][type][i].motcle == val.pref){
+                    notedObj.link.push({"type" : "preferredForm" , "target" : "mi" + nbMethod + "kw" + (i+1) });
+                  }
+                };  
+              }
+              xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][annGRPNb]["span"].push(notedObj);
             });
           });
 
