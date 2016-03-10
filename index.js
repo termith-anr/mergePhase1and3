@@ -7,6 +7,7 @@ var cheerio = require('cheerio'),
 	argv = process.argv,
 	fs = require('fs'),
   dir = require('node-dir'),
+  pd = require('pretty-data2').pd,
   groupArray = require('group-array'),
   JBJ = require('jbj'),
 	path = require('path');
@@ -39,7 +40,15 @@ var options = args.Options.parse([
     help: 'Input CSV PHASE 1 file',
     defaultValue : null,
     required : true
+  },
+  {
+    name: 'output',
+    shortName: 'o',
+    help: 'Output fusion file(s)',
+    defaultValue : null,
+    required : true
   }
+
 ]);
 
 // Parse cli options
@@ -65,12 +74,22 @@ if(!parsed.input){
   return;
 }
 
+if(!parsed.output){
+  console.info(kuler("Please indicate XML OUPUT Folder , see help" , "red"));
+  return;
+}
+
+
 
 /* ------------- */
 /* PATH 2 STRING */
 /* ------------- */
 parsed.input = (parsed.input).toString();
 parsed.csv = (parsed.csv).toString();
+
+if (!fs.existsSync(parsed.output)) {
+  fs.mkdirSync(parsed.output);
+}
 
 /* --------------------*/
 /*  Load CSV FILE      */
@@ -112,6 +131,7 @@ JBJ.render(stylesheet, function(err, out) {
           sil[$(this).text()] = $(this).attr("xml:id");
         });
 
+        // Pour chaque méthode
         Object.keys(grouped).forEach(function(methode,index){
           var xmlJsonC = JSON.parse(JSON.stringify(xmlJson));
           var nbMethod = (methode == "lina-1:notice:tfidf:sequences_nom_adj") ? 1 : 2;
@@ -184,13 +204,11 @@ JBJ.render(stylesheet, function(err, out) {
               xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][annGRPNb]["span"].push(notedObj);
             });
           });
-
-          JBJ.render(xmlJsonC , function(err, out) {
-            console.log(filename);
-            console.log(out);
-          });
-          console.log("=====")
+          
+          var out = JBJ.renderSync(xmlJsonC);
+          $("TEI").append(out);
         });
+        fs.writeFileSync(path.resolve(parsed.output + "/" + path.basename(filename)) , pd.xml($.xml()));
       });
 
       //Go to next file
