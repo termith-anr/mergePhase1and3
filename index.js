@@ -151,7 +151,7 @@ JBJ.render(stylesheet, function(err, out) {
 
               // Si c'est pertinences , on doit dresser la liste des mot d'abord Puis leurs score
               if(type === "Pertinence"){
-                xmlid = "mi" + nbMethod + "kw" + (i + 1);
+                xmlid = "#mi" + nbMethod + "kw" + (i + 1);
                 annGRPNb = 0;
                 var obj = {
                   "xml:ns"  : "http://www.tbx.org", 
@@ -169,13 +169,13 @@ JBJ.render(stylesheet, function(err, out) {
                 xmlJsonC["set"]["ns:stdf"]["ns:annotations"]["termEntry"].push(obj);
               }
               else{
-                xmlid = sil[val.motcle] ? sil[val.motcle] : "#NotFound" ;
+                xmlid = sil[val.motcle] ? "#" + sil[val.motcle] : "#NotFound" ;
                 annGRPNb = 1;
               }
               var notedObj = {
                 "from" : xmlid,
                 "num" : {
-                  "type" : "pertinence",
+                  "type" : type.toLowerCase(),
                   "$t" : val.score
                 },
                 "note" : {
@@ -187,7 +187,7 @@ JBJ.render(stylesheet, function(err, out) {
               if(val.pref && (val.pref != "-")){
                 for (var i = 0; i < grouped[methode][type].length; i++) {
                   if(grouped[methode][type][i].motcle == val.pref){
-                    notedObj.link.push({"type" : "preferredForm" , "target" : "mi" + nbMethod + "kw" + (i+1) });
+                    notedObj.link.push({"type" : "preferredForm" , "target" : "#mi" + nbMethod + "kw" + (i+1) });
                   }
                 };  
               }
@@ -196,12 +196,15 @@ JBJ.render(stylesheet, function(err, out) {
                 // Pour chaque mots pertinence dans cette methode
                 for (var j = 0; j < grouped[methode].Pertinence.length; j++) {
                   if(grouped[methode].Pertinence[j].motcle == val.corresp){
-                    notedObj.link.push({"type" : "TermithForm" , "target" : "mi" + nbMethod + "kw" + (j+1) });
+                    notedObj.link.push({"type" : "TermithForm" , "target" : "#mi" + nbMethod + "kw" + (j+1) });
                     // Ajout lien retour pertinences
                     xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][0]["span"][j].link.push({"type" : "INISTForm" , "target" : xmlid });
                   }
                 };  
               }
+              // if(!notedObj.link){
+              //   delete 
+              // }
               xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][annGRPNb]["span"].push(notedObj);
             });
           };
