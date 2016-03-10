@@ -162,11 +162,22 @@ JBJ.render(stylesheet, function(err, out) {
                 "note" : comment,
                 "link" : [] 
               };
+              // Gestion preferredForm
               if(val.pref && (val.pref != "-")){
-                console.log("preferd : " , val.pref);
                 for (var i = 0; i < grouped[methode][type].length; i++) {
                   if(grouped[methode][type][i].motcle == val.pref){
                     notedObj.link.push({"type" : "preferredForm" , "target" : "mi" + nbMethod + "kw" + (i+1) });
+                  }
+                };  
+              }
+              //Gestion Corresp
+              if(val.corresp && (val.corresp != "-")){
+                console.log("corresp : " , val.corresp);
+                for (var i = 0; i < grouped[methode].Pertinence.length; i++) {
+                  if(grouped[methode].Pertinence[i].motcle == val.corresp){
+                    notedObj.link.push({"type" : "TermithForm" , "target" : "mi" + nbMethod + "kw" + (i+1) });
+                    // Ajout lien retour pertinences
+                    xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][0]["span"][i].link.push({"type" : "INISTForm" , "target" : xmlid });
                   }
                 };  
               }
