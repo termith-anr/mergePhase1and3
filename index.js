@@ -202,14 +202,26 @@ JBJ.render(stylesheet, function(err, out) {
                   }
                 };  
               }
-              // if(!notedObj.link){
-              //   delete 
-              // }
+
+              // Suppresion balises Note vides
+              if(!notedObj.note["$t"]){
+                delete notedObj.note;
+              }
+              // Suppresion balises Link vides Silences
+              if((notedObj.link.length < 1) && (type == "Silence")){
+                delete notedObj.link;
+              }
               xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][annGRPNb]["span"].push(notedObj);
             });
           };
           execObjs("Pertinence");
           execObjs("Silence");
+
+          xmlJsonC["set"]["ns:stdf"]["ns:stdf"]["ns:annotations"]["ns:annotationGrp"][0]["span"].forEach(function(v,l){
+            if(v.link.length < 1){
+              delete v.link;
+            }
+          })
           
           var out = JBJ.renderSync(xmlJsonC);
           $("TEI").append(out);
