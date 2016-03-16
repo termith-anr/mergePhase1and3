@@ -13,6 +13,15 @@
               }
             }
           }
+        },
+        "titleStmt" : {
+          "title" : {
+            "$t" : "Indexation TermITH"
+          },
+          "author" : {
+            "role" : "IndexingEditor",
+            "$t" : "LINA"
+          }
         }
       },
       "ns:annotations" : {

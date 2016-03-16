@@ -178,10 +178,10 @@ JBJ.render(stylesheet, function(err, out) {
                   "type" : type.toLowerCase(),
                   "$t" : val.score
                 },
+                "link" : [],
                 "note" : {
                   "$t" : comment
-                },  
-                "link" : [] 
+                }
               };
               // Gestion preferredForm
               if(val.pref && (val.pref != "-")){
